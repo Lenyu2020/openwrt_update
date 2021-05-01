@@ -18,6 +18,7 @@ if [ -s  "/tmp/cloud_ts_version" ]; then
 	openwrt_dev_uefi=https://github.com/Lenyu2020/openwrt-update-script/releases/download/${new_version}/openwrt_dev_uefi.md5
 else
 	echo "请检测网络，查看是否能打开谷歌！"
+	exit 1
 fi
 ####
 Firmware_Type="$(grep 'DISTRIB_ARCH=' /etc/openwrt_release | cut -d \' -f 2)"
@@ -71,7 +72,7 @@ case $num1 in
 	sleep 3
 	if [ ! -d /sys/firmware/efi ];then
 		gzip -d openwrt_x86-64-${new_version}_dev_Lenyu.img.gz >/dev/null 2>&1
-		sysupgrade /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img 
+		sysupgrade /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img
 	else
 		gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz >/dev/null 2>&1
 		sysupgrade /tmp/gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz
@@ -84,7 +85,7 @@ case $num1 in
 	sleep 3
 	if [ ! -d /sys/firmware/efi ];then
 		gzip -d openwrt_x86-64-${new_version}_dev_Lenyu.img.gz >/dev/null 2>&1
-		sysupgrade -n  /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img 
+		sysupgrade -n  /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img
 	else
 		gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz >/dev/null 2>&1
 		sysupgrade -n  /tmp/gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz
