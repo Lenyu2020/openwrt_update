@@ -40,6 +40,7 @@ if [ ! -d /sys/firmware/efi ];then
 		Boot_type=logic
 	else
 		echo -e "\033[32m 本地已经是最新版本，还更个鸡巴毛啊…-> \033[0m"
+		echo
 		exit
 	fi
 else
@@ -55,6 +56,7 @@ else
 		Boot_type=efi
 	else
 		echo -e "\033[32m 本地已经是最新版本，还更个鸡巴毛啊…-> \033[0m"
+		echo
 		exit
 	fi
 fi
