@@ -75,7 +75,7 @@ case $num1 in
 		sysupgrade /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img
 	else
 		gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz >/dev/null 2>&1
-		sysupgrade /tmp/gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz
+		sysupgrade /tmp/gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img
 	fi
     ;;
     n|N)
@@ -88,7 +88,7 @@ case $num1 in
 		sysupgrade -n  /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img
 	else
 		gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz >/dev/null 2>&1
-		sysupgrade -n  /tmp/gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz
+		sysupgrade -n  /tmp/gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img
 	fi
     ;;
     *)
@@ -103,3 +103,6 @@ esac
 open_up
 
 exit 0
+
+
+
