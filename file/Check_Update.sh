@@ -31,7 +31,7 @@ fi
 Firmware_Type="$(grep 'DISTRIB_ARCH=' /etc/openwrt_release | cut -d \' -f 2)"
 echo $Firmware_Type > /etc/lenyu_firmware_type
 echo
-if [[ "$cloud_kernel" =~ "5.4" ]]; then
+if [[ "$cloud_kernel" =~ "4.19" ]]; then
 	echo
 	echo -e "\033[31m 该脚本在Lenyu固件Sta版本上运行，目前只建议在Dev版本上运行，准备退出… \033[0m"
 	echo
