@@ -30,8 +30,13 @@ fi
 ####
 Firmware_Type="$(grep 'DISTRIB_ARCH=' /etc/openwrt_release | cut -d \' -f 2)"
 echo $Firmware_Type > /etc/lenyu_firmware_type
-
-
+echo
+if [[ "$cloud_kernel" =~ "5.4" ]]; then
+	echo
+	echo -e "\033[31m 该脚本在Lenyu固件Sta/稳定版/上运行，目前建议在Dev/开发版/上运行，准备退出… \033[0m"
+	echo
+	exit 0
+fi
 #md5值验证，固件类型判断
 if [ ! -d /sys/firmware/efi ];then
 	if [ "$current_version" != "$cloud_version" ];then
@@ -111,3 +116,6 @@ esac
 open_up
 
 exit 0
+
+
+
