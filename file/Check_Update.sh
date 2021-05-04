@@ -33,7 +33,7 @@ echo $Firmware_Type > /etc/lenyu_firmware_type
 echo
 if [[ "$cloud_kernel" =~ "5.4" ]]; then
 	echo
-	echo -e "\033[31m 该脚本在Lenyu固件Sta/稳定版/上运行，目前建议在Dev/开发版/上运行，准备退出… \033[0m"
+	echo -e "\033[31m 该脚本在Lenyu固件Sta版本上运行，目前只建议在Dev版本上运行，准备退出… \033[0m"
 	echo
 	exit 0
 fi
