@@ -1,8 +1,15 @@
 #!/bin/bash
 # https://github.com/Lenyu2020/openwrt-update-script
-# openwrt-update-script By Lenyu 20210426
+# openwrt-update-script By Lenyu 20210505
 #path=$(dirname $(readlink -f $0))
 # cd ${path}
+#检测准备
+if [ ! -f  "/etc/lenyu_version" ]; then
+	echo
+	echo -e "\033[31m 该脚本在非Lenyu固件上运行，为避免不必要的麻烦，准备退出… \033[0m"
+	echo
+	exit 0
+fi
 rm -f /tmp/cloud_version
 # 获取固件云端版本号、内核版本号信息
 current_version=`cat /etc/lenyu_version`
@@ -25,21 +32,20 @@ Firmware_Type="$(grep 'DISTRIB_ARCH=' /etc/openwrt_release | cut -d \' -f 2)"
 echo $Firmware_Type > /etc/lenyu_firmware_type
 
 
-#改名之前需要进行md5值验证
-#到底下载什么类型的固件升级需要判断
+#md5值验证，固件类型判断
 if [ ! -d /sys/firmware/efi ];then
 	if [ "$current_version" != "$cloud_version" ];then
 		wget -P /tmp "$DEV_URL" -O /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img.gz  >/dev/null 2>&1
 		wget -P /tmp "$openwrt_dev" -O /tmp/openwrt_dev.md5  >/dev/null 2>&1
 		cd /tmp && md5sum -c openwrt_dev.md5
 		if [ $? != 0 ]; then
-		echo "您下载文件失败，请检查网络重试过…"
+		echo "您下载文件失败，请检查网络重试…"
 		sleep 4
 		exit
 		fi
 		Boot_type=logic
 	else
-		echo -e "\033[32m 本地已经是最新版本，还更个鸡巴毛啊…-> \033[0m"
+		echo -e "\033[32m 本地已经是最新版本，还更个鸡巴毛啊… \033[0m"
 		echo
 		exit
 	fi
@@ -49,13 +55,13 @@ else
 		wget -P /tmp "$openwrt_dev_uefi" -O /tmp/openwrt_dev_uefi.md5 >/dev/null 2>&1
 		cd /tmp && md5sum -c openwrt_dev_uefi.md5
 		if [ $? != 0 ]; then
-		echo "您下载文件失败，请检查网络重试过…"
+		echo "您下载文件失败，请检查网络重试…"
 		sleep 4
 		exit
 		fi
 		Boot_type=efi
 	else
-		echo -e "\033[32m 本地已经是最新版本，还更个鸡巴毛啊…-> \033[0m"
+		echo -e "\033[32m 本地已经是最新版本，还更个鸡巴毛啊… \033[0m"
 		echo
 		exit
 	fi
