@@ -40,8 +40,8 @@ fi
 #md5值验证，固件类型判断
 if [ ! -d /sys/firmware/efi ];then
 	if [ "$current_version" != "$cloud_version" ];then
-		wget -P /tmp "$DEV_URL" -O /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img.gz  >/dev/null 2>&1
-		wget -P /tmp "$openwrt_dev" -O /tmp/openwrt_dev.md5  >/dev/null 2>&1
+		wget -P /tmp "$DEV_URL" -O /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img.gz
+		wget -P /tmp "$openwrt_dev" -O /tmp/openwrt_dev.md5
 		cd /tmp && md5sum -c openwrt_dev.md5
 		if [ $? != 0 ]; then
 		echo "您下载文件失败，请检查网络重试…"
@@ -56,8 +56,8 @@ if [ ! -d /sys/firmware/efi ];then
 	fi
 else
 	if [ "$current_version" != "$cloud_version" ];then
-		wget -P /tmp "$DEV_UEFI_URL" -O /tmp/openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz >/dev/null 2>&1
-		wget -P /tmp "$openwrt_dev_uefi" -O /tmp/openwrt_dev_uefi.md5 >/dev/null 2>&1
+		wget -P /tmp "$DEV_UEFI_URL" -O /tmp/openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz
+		wget -P /tmp "$openwrt_dev_uefi" -O /tmp/openwrt_dev_uefi.md5
 		cd /tmp && md5sum -c openwrt_dev_uefi.md5
 		if [ $? != 0 ]; then
 		echo "您下载文件失败，请检查网络重试…"
@@ -84,10 +84,10 @@ case $num1 in
 	echo
 	sleep 3
 	if [ ! -d /sys/firmware/efi ];then
-		gzip -d openwrt_x86-64-${new_version}_dev_Lenyu.img.gz >/dev/null 2>&1
+		gzip -d openwrt_x86-64-${new_version}_dev_Lenyu.img.gz
 		sysupgrade /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img
 	else
-		gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz >/dev/null 2>&1
+		gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz
 		sysupgrade /tmp/openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img
 	fi
     ;;
@@ -97,10 +97,10 @@ case $num1 in
 	echo
 	sleep 3
 	if [ ! -d /sys/firmware/efi ];then
-		gzip -d openwrt_x86-64-${new_version}_dev_Lenyu.img.gz >/dev/null 2>&1
+		gzip -d openwrt_x86-64-${new_version}_dev_Lenyu.img.gz
 		sysupgrade -n  /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img
 	else
-		gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz >/dev/null 2>&1
+		gzip -d openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img.gz
 		sysupgrade -n  /tmp/openwrt_x86-64-${new_version}_uefi-gpt_dev_Lenyu.img
 	fi
     ;;
