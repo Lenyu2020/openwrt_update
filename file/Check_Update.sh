@@ -113,8 +113,32 @@ case $num1 in
 	open_up
 esac
 }
-open_up
 
+open_op()
+{
+echo
+read -n 1 -p  " 您确定要升级吗，升级选择Y,否则选N:" num1
+echo
+case $num1 in
+	Y|y)
+	open_up
+    ;;
+    n|N)
+	echo
+	echo -e "\033[31m >>>您已选择退出固件升级，已经终止脚本…-> \033[0m"
+	echo
+	exit 1
+    ;;
+    *)
+	echo
+    echo -e "\033[31m err：只能选择Y/N\033[0m"
+	echo
+    read -n 1 -p  "请回车继续…"
+	echo
+	open_op
+esac
+}
+open_op
 exit 0
 
 
