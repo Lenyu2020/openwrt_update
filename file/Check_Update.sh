@@ -75,6 +75,7 @@ fi
 open_up()
 {
 echo
+clear
 read -n 1 -p  " 您是否要保留配置升级，保留选择Y,否则选N:" num1
 echo
 case $num1 in
