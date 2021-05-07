@@ -93,10 +93,10 @@ case $num1 in
 	fi
     ;;
     n|N)
-	echo
-	echo -e "\033[32m >>>正在准备不保留配置升级，请稍后，等待系统重启…-> \033[0m"
-	echo
-	sleep 3
+    echo
+    echo -e "\033[32m >>>正在准备不保留配置升级，请稍后，等待系统重启…-> \033[0m"
+    echo
+    sleep 3
 	if [ ! -d /sys/firmware/efi ];then
 		gzip -d openwrt_x86-64-${new_version}_dev_Lenyu.img.gz
 		sysupgrade -n  /tmp/openwrt_x86-64-${new_version}_dev_Lenyu.img
@@ -122,21 +122,21 @@ read -n 1 -p  " 您确定要升级吗，升级选择Y,否则选N:" num1
 echo
 case $num1 in
 	Y|y)
-	open_up
+	  open_up
     ;;
-    n|N)
-	echo
-	echo -e "\033[31m >>>您已选择退出固件升级，已经终止脚本…-> \033[0m"
-	echo
-	exit 1
+  n|N)
+    echo
+    echo -e "\033[31m >>>您已选择退出固件升级，已经终止脚本…-> \033[0m"
+    echo
+    exit 1
     ;;
-    *)
-	echo
-  echo -e "\033[31m err：只能选择Y/N\033[0m"
-	echo
-  read -n 1 -p  "请回车继续…"
-	echo
-	open_op
+  *)
+    echo
+    echo -e "\033[31m err：只能选择Y/N\033[0m"
+    echo
+    read -n 1 -p  "请回车继续…"
+    echo
+    open_op
 esac
 }
 open_op
