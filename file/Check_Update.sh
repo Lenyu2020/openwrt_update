@@ -81,7 +81,7 @@ echo
 case $num1 in
 	Y|y)
 	echo
-    echo -e "\033[32m >>>正在准备保留配置升级，请稍后，等待系统重启…-> \033[0m"
+  echo -e "\033[32m >>>正在准备保留配置升级，请稍后，等待系统重启…-> \033[0m"
 	echo
 	sleep 3
 	if [ ! -d /sys/firmware/efi ];then
@@ -106,12 +106,12 @@ case $num1 in
 	fi
     ;;
     *)
-	echo
+	  echo
     echo -e "\033[31m err：只能选择Y/N\033[0m"
-	echo
+	  echo
     read -n 1 -p  "请回车继续…"
-	echo
-	open_up
+	  echo
+	  open_up
 esac
 }
 
@@ -132,9 +132,9 @@ case $num1 in
     ;;
     *)
 	echo
-    echo -e "\033[31m err：只能选择Y/N\033[0m"
+  echo -e "\033[31m err：只能选择Y/N\033[0m"
 	echo
-    read -n 1 -p  "请回车继续…"
+  read -n 1 -p  "请回车继续…"
 	echo
 	open_op
 esac
