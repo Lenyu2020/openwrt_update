@@ -44,9 +44,9 @@ if [ ! -d /sys/firmware/efi ];then
 		wget -P /tmp "$openwrt_dev" -O /tmp/openwrt_dev.md5
 		cd /tmp && md5sum -c openwrt_dev.md5
 		if [ $? != 0 ]; then
-		echo "您下载文件失败，请检查网络重试…"
-		sleep 4
-		exit
+      echo "您下载文件失败，请检查网络重试…"
+      sleep 4
+      exit
 		fi
 		Boot_type=logic
 	else
@@ -60,9 +60,9 @@ else
 		wget -P /tmp "$openwrt_dev_uefi" -O /tmp/openwrt_dev_uefi.md5
 		cd /tmp && md5sum -c openwrt_dev_uefi.md5
 		if [ $? != 0 ]; then
-		echo "您下载文件失败，请检查网络重试…"
-		sleep 4
-		exit
+      echo "您下载文件失败，请检查网络重试…"
+      sleep 4
+      exit
 		fi
 		Boot_type=efi
 	else
