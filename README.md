@@ -27,7 +27,7 @@ Openwrt 固件一键检测更新/编译固件脚本！
 
 4.一键脚本运行：
 
-    cd && bash -c "$(wget -O- https://git.io/Jt8nn)"
+    cd && bash -c "$(wget -O- https://git.io/Jt3f6)"
 
 5.若有问题讨论群：https://t.me/openwrt_lede_v2ray_plugin
 
@@ -46,9 +46,3 @@ Openwrt 固件一键检测更新/编译固件脚本！
 ![img_4.png](image/img_4.png)
 
 ![img_5.png](image/img_5.png)
-
-
-
-
-
-888
