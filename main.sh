@@ -101,6 +101,8 @@ case $num1 in
 esac
 }
 
+
+
 menu()
 {
 clear
@@ -109,7 +111,7 @@ cat <<EOF
 
 Openwrt Firmware One-click Update Compilation Script
 
-Script By Lenyu	Version v2.4.2
+Script By Lenyu	Version v2.4.0
 
 -----------------------------------
 >>>菜单主页:
@@ -412,6 +414,30 @@ case $num2 in
 esac
 }
 
+脚本版本号自增
+# if [ ! -f "${path}/xray_update/script_update" ];then
+	# echo "1.1.1.0" > "${path}/xray_update/script_update"
+# fi
+# increment_version ()
+# {
+  # declare -a part=( ${1//\./ } )
+  # declare    new
+  # declare -i carry=1
+
+  # for (( CNTR=${#part[@]}-1; CNTR>=0; CNTR-=1 )); do
+    # len=${#part[CNTR]}
+    # new=$((part[CNTR]+carry))
+    # [ ${#new} -gt $len ] && carry=1 || carry=0
+    # [ $CNTR -gt 0 ] && part[CNTR]=${new: -len} || part[CNTR]=${new}
+  # done
+  # new="${part[*]}"
+  #echo -e "${new// /.}"
+  # echo  -e "${new// /.}" >  ${path}/xray_update/script_update
+# }
+# version=`cat ${path}/xray_update/script_update`
+# increment_version $version
+
+
 
 dev_force_update()
 {
@@ -439,12 +465,22 @@ fi
 rm -rf ${path}/lede/rename.sh
 rm -rf ${path}/lede/package/lean/default-settings/files/zzz-default-settings
 rm -rf ${path}/lede/feeds/helloworld/xray-core/Makefile
+rm -rf ${path}/lede/bin/targets/x86/64/openwrt_dev_uefi.md5
+rm -rf ${path}/lede/bin/targets/x86/64/openwrt_dev.md5
 echo
 git -C ${path}/lede pull >/dev/null 2>&1
 git -C ${path}/lede rev-parse HEAD > new_lede
 echo
 wget -P ${path}/lede/package/lean/default-settings/files https://raw.githubusercontent.com/coolsnowwolf/lede/master/package/lean/default-settings/files/zzz-default-settings -O  ${path}/lede/package/lean/default-settings/files/zzz-default-settings >/dev/null 2>&1
 echo
+#自动从桌面复制xray到files文件处并给相应权限
+if [[ -f  "/mnt/c/Users/perfume/Desktop/xray" ]]; then
+	cp -f /mnt/c/Users/perfume/Desktop/xray ${path}/lede/files/usr/bin/
+	chmod 755 ${path}/lede/files/usr/bin/xray
+	#rm -rf /mnt/c/Users/perfume/Desktop/xray
+else
+	rm -rf ${path}/lede/files/usr/bin/xray
+fi
 #####网络配置######
 if [[ ! -d "${path}/lede/files/etc/config" ]]; then
 	sed -i 's/192.168.1.2/192.168.1.1/g' ${path}/lede/package/base-files/files/bin/config_generate
@@ -567,7 +603,7 @@ echo
 if [ ! -d  "xray_update" ]; then
 	mkdir -p ${path}/xray_update
 fi
-sed -i 's/core.build=OpenWrt/core.build=lenyu/g' ${path}/lede/feeds/helloworld/xray-core/Makefile
+#sed -i 's/Xray, Penetrates Everything/lenyu/g' ${path}/lede/feeds/helloworld/xray-core/Makefile
 #获取xray-core/Makefile最新的版本号信息并修改；
 wget -qO- -t1 -T2 "https://api.github.com/repos/XTLS/Xray-core/releases/latest" | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g;s/v//g' > ${path}/xray_lastest
 #sed 's/\"//g;s/,//g;s/ //g;s/v//g'利用sed数据查找替换；
@@ -649,23 +685,36 @@ echo
 sleep 0.1
 ####智能判断并替换大雕openwrt版本号的变动并自定义格式####
 #下载GitHub使用raw页面，-P 指定目录 -O强制覆盖效果；
-wget -P ${path}/wget https://raw.githubusercontent.com/coolsnowwolf/lede/master/package/lean/default-settings/files/zzz-default-settings -O  ${path}/wget/zzz-default-settings >/dev/null 2>&1
-sleep 0.3
+lenyu_version="`date '+%y%m%d%H%M'`_dev_Len yu"
+echo $lenyu_version > ${path}/wget/DISTRIB_REVISION1
+echo $lenyu_version | cut -d _ -f 1 > ${path}/lede/files/etc/lenyu_version
+#######
 #-s代表文件存在不为空,!将他取反
-if [ -s  "${path}/wget/zzz-default-settings" ]; then
-	grep "DISTRIB_REVISION=" ${path}/wget/zzz-default-settings | cut -d \' -f 2 > ${path}/wget/DISTRIB_REVISION1
+if [ -s  "${path}/lede/package/lean/default-settings/files/zzz-default-settings" ]; then
 	new_DISTRIB_REVISION=`cat ${path}/wget/DISTRIB_REVISION1`
-	#本地的文件，作为判断
 	grep "DISTRIB_REVISION=" ${path}/lede/package/lean/default-settings/files/zzz-default-settings | cut -d \' -f 2 > ${path}/wget/DISTRIB_REVISION3
 	old_DISTRIB_REVISION=`cat ${path}/wget/DISTRIB_REVISION3`
-	#新旧判断是否执行替换R自定义版本…
-	if [ "${new_DISTRIB_REVISION}_dev_Len yu" != "${old_DISTRIB_REVISION}" ]; then #版本号相等且带_dev_Len yu的情况，则不变，因此要不等于才动作；
-		if [ "${new_DISTRIB_REVISION}" = "${old_DISTRIB_REVISION}" ]; then #版本号相等不带_dev_Len yu 的情况；
-			sed -i "s/${old_DISTRIB_REVISION}/${new_DISTRIB_REVISION}_dev_Len yu/"  ${path}/lede/package/lean/default-settings/files/zzz-default-settings
-		fi
-	fi
+	#替换自定义版本…
+			sed -i "s/${old_DISTRIB_REVISION}/${new_DISTRIB_REVISION}/"  ${path}/lede/package/lean/default-settings/files/zzz-default-settings
 	rm -rf ${path}/wget/DISTRIB_REVISION*
 	rm -rf ${path}/wget/zzz-default-settings*
+	#添加脚本alias
+	grep "Check_Update.sh" ${path}/lede/package/lean/default-settings/files/zzz-default-settings
+	if [ $? != 0 ]; then
+		sed -i 's/exit 0/ /' ${path}/lede/package/lean/default-settings/files/zzz-default-settings
+		cat>>${path}/lede/package/lean/default-settings/files/zzz-default-settings<<-EOF
+		sed -i '$ a alias lenyu="bash /usr/share/Check_Update.sh"' /etc/profile
+		exit 0
+		EOF
+	fi
+	grep "Lenyu-auto.sh" ${path}/lede/package/lean/default-settings/files/zzz-default-settings
+	if [ $? != 0 ]; then
+		sed -i 's/exit 0/ /' ${path}/lede/package/lean/default-settings/files/zzz-default-settings
+		cat>>${path}/lede/package/lean/default-settings/files/zzz-default-settings<<-EOF
+		sed -i '$ a alias lenyu-auto="bash /usr/share/Lenyu-auto.sh"' /etc/profile
+		exit 0
+		EOF
+	fi
 fi
 ####；
 #总结判断;
@@ -675,7 +724,7 @@ cat>${path}/lede/rename.sh<<EOF
 #/usr/bin/bash
 path=\$(dirname \$(readlink -f \$0))
 cd \${path}
-	if [ ! -f \${path}/bin/targets/x86/64/*combined.img.gz ] >/dev/null 2>&1; then
+	if [ ! -f \${path}/bin/targets/x86/64/*combined*.img.gz ] >/dev/null 2>&1; then
 		echo
 		echo "您编译时未选择压缩固件，故不进行重命名操作…"
 		echo
@@ -702,21 +751,32 @@ cd \${path}
 	rm -rf \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img
 	rm -rf \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-rootfs.img
     sleep 2
-    str1=\`grep "KERNEL_PATCHVER:=" \${path}/target/linux/x86/Makefile | cut -d = -f 2\` #5.4
-	ver414=\`grep "LINUX_VERSION-4.14 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
-	ver419=\`grep "LINUX_VERSION-4.19 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
-	ver54=\`grep "LINUX_VERSION-5.4 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
+	rename_version=\`cat ${path}/lede/files/etc/lenyu_version\`
+    str1=\`grep "KERNEL_PATCHVER:=" \${path}/target/linux/x86/Makefile | cut -d = -f 2\` #判断当前默认内核版本号如5.10
+	ver414=\`grep "LINUX_VERSION-4.14 =" \${path}/include/kernel-4.14 | cut -d . -f 3\`
+	ver419=\`grep "LINUX_VERSION-4.19 =" \${path}/include/kernel-4.19 | cut -d . -f 3\`
+	ver54=\`grep "LINUX_VERSION-5.4 =" \${path}/include/kernel-5.4 | cut -d . -f 3\`
+	ver510=\`grep "LINUX_VERSION-5.10 =" \${path}/include/kernel-5.10 | cut -d . -f 3\`
+	ver515=\`grep "LINUX_VERSION-5.10 =" \${path}/include/kernel-5.15 | cut -d . -f 3\`
 	if [ "\$str1" = "5.4" ];then
-		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver54}_dev_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver54}_uefi-gpt_dev_Lenyu.img.gz
+		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 	elif [ "\$str1" = "4.19" ];then
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver419}_dev_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver419}_uefi-gpt_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver419}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver419}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 	elif [ "\$str1" = "4.14" ];then
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver414}_dev_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver414}_uefi-gpt_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver414}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver414}_uefi-gpt_dev_Lenyu.img.gz
+		exit 0
+	elif [ "\$str1" = "5.10" ];then
+		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver510}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver510}_uefi-gpt_dev_Lenyu.img.gz
+		exit 0
+	elif [ "\$str1" = "5.15" ];then
+		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver515}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver515}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 
 	fi
@@ -759,6 +819,23 @@ if [[ ("$nolede" = "update") || ("$noclash" = "update") || ("$nossr" = "update" 
 			echo
 			echo "编译好的固件在${path}/lede/bin/targets/x86/64/目录下，enjoy！"
 			echo
+			###计算本地MD5值
+			ls -l  "${path}/lede/bin/targets/x86/64" | awk -F " " '{print $9}' > ${path}/wget/open_dev_md5
+			dev_version=`grep "_uefi-gpt_dev_Lenyu.img.gz" ${path}/wget/open_dev_md5 | cut -d - -f 3 | cut -d _ -f 1-2`
+			openwrt_dev=openwrt_x86-64-${dev_version}_dev_Lenyu.img.gz
+			openwrt_dev_uefi=openwrt_x86-64-${dev_version}_uefi-gpt_dev_Lenyu.img.gz
+			cd ${path}/lede/bin/targets/x86/64
+			md5sum $openwrt_dev > openwrt_dev.md5
+			md5sum $openwrt_dev_uefi > openwrt_dev_uefi.md5
+			cd ${path}
+			rm -rf ${path}/wget/open_dev_md*
+			echo
+			########自动更新openwrt发布名称
+			#c对一行或多行进行整行替换
+			sed -i "1c $openwrt_dev"  /mnt/c/Users/perfume/Documents/openwrt.txt
+			sed -i "2c $openwrt_dev_uefi"  /mnt/c/Users/perfume/Documents/openwrt.txt
+			echo
+			##########
 			rm -rf ${path}/lede/bin/targets/x86/64/sha256sums
 			read -n 1 -p  "请回车继续…"
 			menu
@@ -795,6 +872,23 @@ if [[ ("$nolede" = "no_update") && ("$noclash" = "no_update") && ("$noxray" = "n
 			echo
 			echo "编译好的固件在${path}/lede/bin/targets/x86/64/目录下，enjoy！"
 			echo
+			###计算本地MD5值
+			ls -l  "${path}/lede/bin/targets/x86/64" | awk -F " " '{print $9}' > ${path}/wget/open_dev_md5
+			dev_version=`grep "_uefi-gpt_dev_Lenyu.img.gz" ${path}/wget/open_dev_md5 | cut -d - -f 3 | cut -d _ -f 1-2`
+			openwrt_dev=openwrt_x86-64-${dev_version}_dev_Lenyu.img.gz
+			openwrt_dev_uefi=openwrt_x86-64-${dev_version}_uefi-gpt_dev_Lenyu.img.gz
+			cd ${path}/lede/bin/targets/x86/64
+			md5sum $openwrt_dev > openwrt_dev.md5
+			md5sum $openwrt_dev_uefi > openwrt_dev_uefi.md5
+			cd ${path}
+			rm -rf ${path}/wget/open_dev_md*
+			echo
+			########自动更新openwrt发布名称
+			#c对一行或多行进行整行替换
+			sed -i "1c $openwrt_dev"  /mnt/c/Users/perfume/Documents/openwrt.txt
+			sed -i "2c $openwrt_dev_uefi"  /mnt/c/Users/perfume/Documents/openwrt.txt
+			echo
+			##########
 			rm -rf ${path}/lede/bin/targets/x86/64/sha256sums
 			read -n 1 -p  "请回车继续…"
 			menu
@@ -833,6 +927,8 @@ rm -rf ${path}/lede/rename.sh
 rm -rf ${path}/lede/package/lean/default-settings/files/zzz-default-settings
 #rm -rf ${path}/lede/package/base-files/files/bin/config_generate
 rm -rf ${path}/lede/feeds/helloworld/xray-core/Makefile
+rm -rf ${path}/lede/bin/targets/x86/64/openwrt_dev_uefi.md5
+rm -rf ${path}/lede/bin/targets/x86/64/openwrt_dev.md5
 echo
 git -C ${path}/lede pull >/dev/null 2>&1
 git -C ${path}/lede rev-parse HEAD > new_lede
@@ -980,7 +1076,7 @@ echo
 rm -rf ${path}/xray_lastest
 #本地版本号；
 grep "PKG_VERSION:=" ${path}/lede/feeds/helloworld/xray-core/Makefile | awk -F "=" '{print $2}' > ${path}/jud_Makefile
-old_xray=`cat ${path}/jud_Makefile`
+old_xray=`cat ${path}/jud_Makefile`https://github.com/Hyy2001X/luci-app-autoupdate.git
 rm -rf ${path}/jud_Makefile
 echo
 if [ "$new_xray" != "$old_xray" ]; then
@@ -1059,6 +1155,15 @@ if [ -s  "${path}/wget/zzz-default-settings" ]; then
 	fi
 	rm -rf ${path}/wget/DISTRIB_REVISION*
 	rm -rf ${path}/wget/zzz-default-settings*
+	#添加脚本alias
+	grep "Check_Update.sh" ${path}/lede/package/lean/default-settings/files/zzz-default-settings
+	if [ $? != 0 ]; then
+		sed -i 's/exit 0/ /' ${path}/lede/package/lean/default-settings/files/zzz-default-settings
+		cat>>${path}/lede/package/lean/default-settings/files/zzz-default-settings<<-EOF
+		sed -i '$ a alias lenyu="bash /usr/share/Check_Update.sh"' /etc/profile
+		exit 0
+		EOF
+	fi
 fi
 ####；
 #总结判断;
@@ -1068,7 +1173,7 @@ cat>${path}/lede/rename.sh<<EOF
 #/usr/bin/bash
 path=\$(dirname \$(readlink -f \$0))
 cd \${path}
-	if [ ! -f \${path}/bin/targets/x86/64/*combined.img.gz ] >/dev/null 2>&1; then
+	if [ ! -f \${path}/bin/targets/x86/64/*combined*.img.gz ] >/dev/null 2>&1; then
 		echo
 		echo "您编译时未选择压缩固件，故不进行重命名操作…"
 		echo
@@ -1095,21 +1200,27 @@ cd \${path}
 	rm -rf \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img
 	rm -rf \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-rootfs.img
     sleep 2
+	rename_version=\`cat ${path}/lede/files/etc/lenyu_version\`
     str1=\`grep "KERNEL_PATCHVER:=" \${path}/target/linux/x86/Makefile | cut -d = -f 2\` #5.4
 	ver414=\`grep "LINUX_VERSION-4.14 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
 	ver419=\`grep "LINUX_VERSION-4.19 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
 	ver54=\`grep "LINUX_VERSION-5.4 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
+	ver510=\`grep "LINUX_VERSION-5.10 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
 	if [ "\$str1" = "5.4" ];then
-		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver54}_dev_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver54}_uefi-gpt_dev_Lenyu.img.gz
+		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 	elif [ "\$str1" = "4.19" ];then
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver419}_dev_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver419}_uefi-gpt_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver419}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver419}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 	elif [ "\$str1" = "4.14" ];then
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver414}_dev_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver414}_uefi-gpt_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver414}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver414}_uefi-gpt_dev_Lenyu.img.gz
+		exit 0
+	elif [ "\$str1" = "5.10" ];then
+		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver510}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver510}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 
 	fi
@@ -1152,6 +1263,17 @@ if [[ ("$nolede" = "update") || ("$noclash" = "update") || ("$noxray" = "update"
 			echo
 			echo "编译好的固件在${path}/lede/bin/targets/x86/64/目录下，enjoy！"
 			echo
+			###计算本地MD5值
+			ls -l  "${path}/lede/bin/targets/x86/64" | awk -F " " '{print $9}' > ${path}/wget/open_dev_md5
+			dev_version=`grep "_uefi-gpt_dev_Lenyu.img.gz" ${path}/wget/open_dev_md5 | cut -d - -f 3 | cut -d _ -f 1-2`
+			openwrt_dev=openwrt_x86-64-${dev_version}_dev_Lenyu.img.gz
+			openwrt_dev_uefi=openwrt_x86-64-${dev_version}_uefi-gpt_dev_Lenyu.img.gz
+			cd ${path}/lede/bin/targets/x86/64
+			md5sum $openwrt_dev > openwrt_dev.md5
+			md5sum $openwrt_dev_uefi > openwrt_dev_uefi.md5
+			cd ${path}
+			rm -rf ${path}/wget/open_dev_md*
+			########
 			rm -rf ${path}/lede/bin/targets/x86/64/sha256sums
 			read -n 1 -p  "请回车继续…"
 			menu
@@ -1207,6 +1329,8 @@ rm -rf ${path}/openwrt/rename.sh
 rm -rf ${path}/openwrt/package/lean/default-settings/files/zzz-default-settings
 #rm -rf ${path}/openwrt/package/base-files/files/bin/config_generate
 rm -rf ${path}/openwrt/feeds/helloworld/xray-core/Makefile
+rm -rf ${path}/openwrt/bin/targets/x86/64/openwrt_dev_uefi.md5
+rm -rf ${path}/openwrt/bin/targets/x86/64/openwrt_dev.md5
 echo
 git -C ${path}/openwrt pull >/dev/null 2>&1
 git -C ${path}/openwrt rev-parse HEAD > new_openwrt
@@ -1433,6 +1557,15 @@ if [ -s  "${path}/wget/zzz-default-settings" ]; then
 	fi
 	rm -rf ${path}/wget/DISTRIB_REVISION*
 	rm -rf ${path}/wget/zzz-default-settings*
+	#添加脚本alias
+	grep "Check_Update.sh" ${path}/openwrt/package/lean/default-settings/files/zzz-default-settings
+	if [ $? != 0 ]; then
+		sed -i 's/exit 0/ /' ${path}/openwrt/package/lean/default-settings/files/zzz-default-settings
+		cat>>${path}/openwrt/package/lean/default-settings/files/zzz-default-settings<<-EOF
+		sed -i '$ a alias lenyu="bash /usr/share/Check_Update.sh"' /etc/profile
+		exit 0
+		EOF
+	fi
 fi
 ####；
 #总结判断;
@@ -1469,21 +1602,27 @@ cd \${path}
 		rm -rf \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img
 		rm -rf \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-rootfs.img
     sleep 2
+	rename_version=\`cat ${path}/openwrt/files/etc/lenyu_version\`
     str1=\`grep "KERNEL_PATCHVER:=" \${path}/target/linux/x86/Makefile | cut -d = -f 2\` #5.4
 	ver414=\`grep "LINUX_VERSION-4.14 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
 	ver419=\`grep "LINUX_VERSION-4.19 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
 	ver54=\`grep "LINUX_VERSION-5.4 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
+	ver510=\`grep "LINUX_VERSION-5.10 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
 	if [ "\$str1" = "5.4" ];then
-		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-combined-squashfs.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver54}_sta_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-uefi-gpt-squashfs.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver54}_uefi-gpt_sta_Lenyu.img.gz
+		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 	elif [ "\$str1" = "4.19" ];then
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-combined-squashfs.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver419}_sta_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-uefi-gpt-squashfs.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver419}_uefi-gpt_sta_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver419}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver419}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 	elif [ "\$str1" = "4.14" ];then
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-combined-squashfs.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver414}_sta_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-uefi-gpt-squashfs.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver414}_uefi-gpt_sta_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver414}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver414}_uefi-gpt_dev_Lenyu.img.gz
+		exit 0
+	elif [ "\$str1" = "5.10" ];then
+		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver510}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver510}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 
 	fi
@@ -1526,6 +1665,17 @@ if [[ ("$noopenwrt" = "update")  || ("$noxray" = "update") || ("$nossr" = "updat
 			echo
 			echo "编译好的固件在${path}/openwrt/bin/targets/x86/64/目录下，enjoy！"
 			echo
+			###计算本地MD5值
+			ls -l  "${path}/openwrt/bin/targets/x86/64" | awk -F " " '{print $9}' > ${path}/wget/open_sta_md5
+			sta_version=`grep "_uefi-gpt_sta_Lenyu.img.gz" ${path}/wget/open_sta_md5 | cut -d - -f 3 | cut -d _ -f 1-2`
+			openwrt_sta=openwrt_x86-64-${sta_version}_sta_Lenyu.img.gz
+			openwrt_sta_uefi=openwrt_x86-64-${sta_version}_uefi-gpt_sta_Lenyu.img.gz
+			cd ${path}/openwrt/bin/targets/x86/64
+			md5sum $openwrt_dev > openwrt_dev.md5
+			md5sum $openwrt_dev_uefi > openwrt_dev_uefi.md5
+			rm -rf ${path}/wget/open_dev_md*
+			cd ${path}
+			########
 			rm -rf ${path}/openwrt/bin/targets/x86/64/sha256sums
 			read -n 1 -p  "请回车继续…"
 			menu
@@ -1562,6 +1712,17 @@ if [[ ("$noopenwrt" = "no_update") && ("$noxray" = "no_update") && ("$nossr" = "
 			echo
 			echo "编译好的固件在${path}/openwrt/bin/targets/x86/64/目录下，enjoy！"
 			echo
+			###计算本地MD5值
+			ls -l  "${path}/openwrt/bin/targets/x86/64" | awk -F " " '{print $9}' > ${path}/wget/open_sta_md5
+			sta_version=`grep "_uefi-gpt_sta_Lenyu.img.gz" ${path}/wget/open_sta_md5 | cut -d - -f 3 | cut -d _ -f 1-2`
+			openwrt_sta=openwrt_x86-64-${sta_version}_sta_Lenyu.img.gz
+			openwrt_sta_uefi=openwrt_x86-64-${sta_version}_uefi-gpt_sta_Lenyu.img.gz
+			cd ${path}/openwrt/bin/targets/x86/64
+			md5sum $openwrt_dev > openwrt_dev.md5
+			md5sum $openwrt_dev_uefi > openwrt_dev_uefi.md5
+			rm -rf ${path}/wget/open_dev_md*
+			cd ${path}
+			########
 			rm -rf ${path}/openwrt/bin/targets/x86/64/sha256sums
 			read -n 1 -p  "请回车继续…"
 			menu
@@ -1602,6 +1763,8 @@ rm -rf ${path}/openwrt/rename.sh
 rm -rf ${path}/openwrt/package/lean/default-settings/files/zzz-default-settings
 #rm -rf ${path}/openwrt/package/base-files/files/bin/config_generate
 rm -rf ${path}/openwrt/feeds/helloworld/xray-core/Makefile
+rm -rf ${path}/openwrt/bin/targets/x86/64/openwrt_dev_uefi.md5
+rm -rf ${path}/openwrt/bin/targets/x86/64/openwrt_dev.md5
 echo
 git -C ${path}/openwrt pull >/dev/null 2>&1
 git -C ${path}/openwrt rev-parse HEAD > new_openwrt
@@ -1828,6 +1991,15 @@ if [ -s  "${path}/wget/zzz-default-settings" ]; then
 	fi
 	rm -rf ${path}/wget/DISTRIB_REVISION*
 	rm -rf ${path}/wget/zzz-default-settings*
+	#添加脚本alias
+	grep "Check_Update.sh" ${path}/openwrt/package/lean/default-settings/files/zzz-default-settings
+	if [ $? != 0 ]; then
+		sed -i 's/exit 0/ /' ${path}/openwrt/package/lean/default-settings/files/zzz-default-settings
+		cat>>${path}/openwrt/package/lean/default-settings/files/zzz-default-settings<<-EOF
+		sed -i '$ a alias lenyu="bash /usr/share/Check_Update.sh"' /etc/profile
+		exit 0
+		EOF
+	fi
 fi
 ####；
 #总结判断;
@@ -1864,21 +2036,27 @@ cd \${path}
 		rm -rf \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img
 		rm -rf \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-rootfs.img
     sleep 2
+	rename_version=\`cat ${path}/openwrt/files/etc/lenyu_version\`
     str1=\`grep "KERNEL_PATCHVER:=" \${path}/target/linux/x86/Makefile | cut -d = -f 2\` #5.4
 	ver414=\`grep "LINUX_VERSION-4.14 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
 	ver419=\`grep "LINUX_VERSION-4.19 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
 	ver54=\`grep "LINUX_VERSION-5.4 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
+	ver510=\`grep "LINUX_VERSION-5.10 =" \${path}/include/kernel-version.mk | cut -d . -f 3\`
 	if [ "\$str1" = "5.4" ];then
-		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-combined-squashfs.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver54}_sta_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-uefi-gpt-squashfs.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver54}_uefi-gpt_sta_Lenyu.img.gz
+		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 	elif [ "\$str1" = "4.19" ];then
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-combined-squashfs.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver419}_sta_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-uefi-gpt-squashfs.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver419}_uefi-gpt_sta_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver419}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver419}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 	elif [ "\$str1" = "4.14" ];then
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-combined-squashfs.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver414}_sta_Lenyu.img.gz
-		mv \${path}/bin/targets/x86/64/openwrt-x86-64-uefi-gpt-squashfs.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\`date '+%m%d'\`_\${str1}.\${ver414}_uefi-gpt_sta_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver414}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver414}_uefi-gpt_dev_Lenyu.img.gz
+		exit 0
+	elif [ "\$str1" = "5.10" ];then
+		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver510}_dev_Lenyu.img.gz
+		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver510}_uefi-gpt_dev_Lenyu.img.gz
 		exit 0
 
 	fi
@@ -1921,6 +2099,17 @@ if [[ ("$noopenwrt" = "update") || ("$noxray" = "update") || ("$nossr" = "update
 			echo
 			echo "编译好的固件在${path}/openwrt/bin/targets/x86/64/目录下，enjoy！"
 			echo
+			###计算本地MD5值
+			ls -l  "${path}/openwrt/bin/targets/x86/64" | awk -F " " '{print $9}' > ${path}/wget/open_sta_md5
+			sta_version=`grep "_uefi-gpt_sta_Lenyu.img.gz" ${path}/wget/open_sta_md5 | cut -d - -f 3 | cut -d _ -f 1-2`
+			openwrt_sta=openwrt_x86-64-${sta_version}_sta_Lenyu.img.gz
+			openwrt_sta_uefi=openwrt_x86-64-${sta_version}_uefi-gpt_sta_Lenyu.img.gz
+			cd ${path}/openwrt/bin/targets/x86/64
+			md5sum $openwrt_dev > openwrt_dev.md5
+			md5sum $openwrt_dev_uefi > openwrt_dev_uefi.md5
+			rm -rf ${path}/wget/open_dev_md*
+			cd ${path}
+			########
 			rm -rf ${path}/openwrt/bin/targets/x86/64/sha256sums
 			read -n 1 -p  "请回车继续…"
 			menu
