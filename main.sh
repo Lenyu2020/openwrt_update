@@ -757,7 +757,7 @@ cd \${path}
 	ver419=\`grep "LINUX_VERSION-4.19 =" \${path}/include/kernel-4.19 | cut -d . -f 3\`
 	ver54=\`grep "LINUX_VERSION-5.4 =" \${path}/include/kernel-5.4 | cut -d . -f 3\`
 	ver510=\`grep "LINUX_VERSION-5.10 =" \${path}/include/kernel-5.10 | cut -d . -f 3\`
-	ver515=\`grep "LINUX_VERSION-5.10 =" \${path}/include/kernel-5.15 | cut -d . -f 3\`
+	ver515=\`grep "LINUX_VERSION-5.15 =" \${path}/include/kernel-5.15 | cut -d . -f 3\`
 	if [ "\$str1" = "5.4" ];then
 		 mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz      \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_dev_Lenyu.img.gz
 		mv \${path}/bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz  \${path}/bin/targets/x86/64/openwrt_x86-64-\${rename_version}_\${str1}.\${ver54}_uefi-gpt_dev_Lenyu.img.gz
